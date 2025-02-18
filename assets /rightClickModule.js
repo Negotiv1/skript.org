@@ -1,4 +1,14 @@
-function() {
+// ==UserScript==
+// @name         гей
+// @namespace    none
+// @version      none
+// @description  none
+// @author       You
+// @match        none
+// @grant        none
+// ==/UserScript==
+
+(function() {
     'use strict';
 
     let lastTime = 0;
@@ -28,12 +38,13 @@ function() {
     creditsDisplay.style.color = 'white';
     creditsDisplay.style.textAlign = 'center';
     creditsDisplay.style.zIndex = '9999';
-    creditsDisplay.style.background = 'black';
-    creditsDisplay.style.padding = '5px';
+    creditsDisplay.style.background = 'linear-gradient(45deg, red, yellow, green, blue, purple)';
+    creditsDisplay.style.backgroundSize = '400% 400%';
+    creditsDisplay.style.animation = 'gradientAnimation 3s ease infinite';
 
     document.body.appendChild(creditsDisplay);
 
-    creditsDisplay.innerHTML = 'By Mr.Negotiv-By Ananas-By Akuma | <a href="" target="_blank" style="color: white; text-decoration: underline;">.</a>';
+    creditsDisplay.innerHTML = 'By Mr.Negotiv By Ananas By Akuma | <a href="" target="_blank" style="color: white; text-decoration: underline;">.</a>';
 
     const fpsDisplay = document.createElement('div');
     fpsDisplay.style.position = 'absolute';
@@ -43,8 +54,9 @@ function() {
     fpsDisplay.style.color = 'white';
     fpsDisplay.style.textAlign = 'center';
     fpsDisplay.style.zIndex = '9999';
-    fpsDisplay.style.background = 'black';
-    fpsDisplay.style.padding = '5px';
+    fpsDisplay.style.background = 'linear-gradient(45deg, red, yellow, green, blue, purple)';
+    fpsDisplay.style.backgroundSize = '400% 400%';
+    fpsDisplay.style.animation = 'gradientAnimation 3s ease infinite';
 
     document.body.appendChild(fpsDisplay);
 
@@ -54,4 +66,14 @@ function() {
     }
 
     updateDisplay();
+
+    const style = document.createElement('style');
+    style.innerHTML = 
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    ;
+    document.head.appendChild(style);
 })();
