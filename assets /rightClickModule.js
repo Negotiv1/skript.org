@@ -38,8 +38,9 @@
     creditsDisplay.style.color = 'white';
     creditsDisplay.style.textAlign = 'center';
     creditsDisplay.style.zIndex = '9999';
-    creditsDisplay.style.background = 'black';
+    creditsDisplay.style.background = 'linear-gradient(45deg, #ff00ff, #00ffff)';
     creditsDisplay.style.padding = '5px';
+    creditsDisplay.style.borderRadius = '5px';
 
     document.body.appendChild(creditsDisplay);
 
@@ -53,8 +54,9 @@
     fpsDisplay.style.color = 'white';
     fpsDisplay.style.textAlign = 'center';
     fpsDisplay.style.zIndex = '9999';
-    fpsDisplay.style.background = 'black';
+    fpsDisplay.style.background = 'linear-gradient(45deg, #00ff00, #0000ff)';
     fpsDisplay.style.padding = '5px';
+    fpsDisplay.style.borderRadius = '5px';
 
     document.body.appendChild(fpsDisplay);
 
