@@ -44,7 +44,7 @@
 
     document.body.appendChild(creditsDisplay);
 
-    creditsDisplay.innerHTML = 'By Mr.Negotiv beta v1 | <a href="https://docs.google.com/spreadsheets/d/1bqLvzatj1TBfln0rGBf8X96T_UzXUhTykiiM9Y6cLVU/edit?gid=1695479590#gid=1695479590" target="_blank" style="color: white; text-decoration: underline;">Инструкция</a>';
+    creditsDisplay.innerHTML = 'By Mr.Negotiv-By Ananas-By Akuma | <a href="." target="_blank" style="color: white; text-decoration: underline;">.</a>';
 
     const fpsDisplay = document.createElement('div');
     fpsDisplay.style.position = 'absolute';
