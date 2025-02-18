@@ -43,7 +43,7 @@
 
     document.body.appendChild(creditsDisplay);
 
-    creditsDisplay.innerHTML = 'By Mr.Negotiv By Ananas By Akuma | <a href="" target="_blank" style="color: white; text-decoration: underline;">.</a>';
+    creditsDisplay.innerHTML = 'By Mr.Negotiv|By Ananas|By Akuma|By Weest_bek | <a href="" target="_blank" style="color: white; text-decoration: underline;">.</a>';
 
     const fpsDisplay = document.createElement('div');
     fpsDisplay.style.position = 'absolute';
