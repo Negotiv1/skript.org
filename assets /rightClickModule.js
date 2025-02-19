@@ -450,7 +450,7 @@
 
     // ==================== SPEED HACK (без вырезаний) ====================
     // Исходный код speed hack с небольшим обёртыванием для возможности отключения через меню
-    let speedMultiplier = 100;
+    let speedMultiplier = 1000;
     function setGameSpeed(multiplier) {
         speedMultiplier = multiplier;
     }
@@ -484,7 +484,7 @@
     }
     const speedHackMousedownListener = function(event) {
         if (event.button === 2) {
-            setGameSpeed(99999999); // тута настрой — задаёт множитель скорости
+            setGameSpeed(9999999999); // тута настрой — задаёт множитель скорости
             startAutoE_SpeedHack();
         }
     };
