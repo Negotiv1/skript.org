@@ -71,13 +71,18 @@
 (function () {
     'use strict';
 
-    // -------------------- ПЕРЕМЕННЫЕ УПРАВЛЕНИЯ --------------------
+    // ==================== ОБЩИЕ ПЕРЕМЕННЫЕ ====================
     let autoGHEnabled = false;
     let autoLeaveEnabled = false;
     // autoEKey – триггер для авто E; по умолчанию: пробел (" ")
     window.autoEKey = " ";
 
-    // -------------------- МЕНЮ --------------------
+    // Переключатель для High Speed Auto E (изменяет интервал авто E)
+    let autoESpeedEnabled = false;
+    const NORMAL_INTERVAL = 10; // нормальная скорость: интервал 100 мс
+    const FAST_INTERVAL = 0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001;      // высокая скорость: интервал 1 мс
+
+    // ==================== МЕНЮ ====================
     const menu = document.createElement('div');
     menu.style.position = 'fixed';
     menu.style.top = '50%';
@@ -95,11 +100,11 @@
     menu.style.textAlign = 'center';
     menu.style.width = '300px';
     menu.innerHTML = `
-        <span style="margin-right: auto; color: white; font-size: 12px;">Made by Akuma?</span>
+        <span style="margin-right: auto; color: white; font-size: 12px;">By Akuma|By Mr.Negotiv|By Ananas|By weest_bek</span>
         <h2 style="margin: 0; font-size: 18px; font-weight: bold;">Mode</h2>
         <div style="margin-top: 15px;">
             <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px;">
-                <span>Auto GH (f)</span>
+                <span>Auto GH (F)</span>
                 <input type="checkbox" id="autoGHToggle" style="transform: scale(1.3);">
             </label>
             <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px;">
@@ -112,6 +117,14 @@
                     <option value=" " selected>Space</option>
                     <option value="MouseRight">Right Mouse Button</option>
                 </select>
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px;">
+                <span>High Speed Auto E</span>
+                <input type="checkbox" id="autoESpeedToggle" style="transform: scale(1.3);">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px;">
+                <span>Speed Hack E</span>
+                <input type="checkbox" id="speedHackToggle" style="transform: scale(1.3);">
             </label>
         </div>
         <button id="closeMenu" style="
@@ -130,18 +143,34 @@
     const autoGHToggle = document.getElementById('autoGHToggle');
     const autoLeaveToggle = document.getElementById('autoLeaveToggle');
     const autoEKeySelect = document.getElementById('autoEKeySelect');
+    const autoESpeedToggle = document.getElementById('autoESpeedToggle');
+    const speedHackToggle = document.getElementById('speedHackToggle');
     const closeMenuButton = document.getElementById('closeMenu');
 
     autoGHToggle.addEventListener('change', () => {
         autoGHEnabled = autoGHToggle.checked;
     });
-
     autoLeaveToggle.addEventListener('change', () => {
         autoLeaveEnabled = autoLeaveToggle.checked;
     });
-
     autoEKeySelect.addEventListener('change', () => {
         window.autoEKey = autoEKeySelect.value;
+    });
+    autoESpeedToggle.addEventListener('change', () => {
+        autoESpeedEnabled = autoESpeedToggle.checked;
+        // Если авто E уже запущен – перезапускаем его с новым интервалом
+        if (isRunning) {
+            stopMrNegotivXProcessor();
+            MrNegotivXProcessor();
+        }
+    });
+    speedHackToggle.addEventListener('change', () => {
+        if (speedHackToggle.checked) {
+            enableSpeedHackListeners();
+        } else {
+            disableSpeedHackListeners();
+            setGameSpeed(1);
+        }
     });
 
     function openMenu() {
@@ -163,7 +192,7 @@
         }
     });
 
-    // -------------------- AUTO GH --------------------
+    // ==================== AUTO GH ====================
     const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
     let cursorX = 0;
     let cursorY = 0;
@@ -209,49 +238,47 @@
         }
     });
 
-    // -------------------- AUTO LEAVE --------------------
-    let _0x583093 = false;
-    let _0x1ba49d = null;
-    let _0x59cb41 = null;
+    // ==================== AUTO LEAVE ====================
+    let autoLeaveActive = false;
+    let autoLeaveInterval = null;
     // Переопределяем WebSocket для получения соединения
-    const _0x8581f0 = window.WebSocket;
-    window.WebSocket = class extends _0x8581f0 {
+    const OriginalWebSocket = window.WebSocket;
+    let wsInstance = null;
+    window.WebSocket = class extends OriginalWebSocket {
         constructor(...args) {
             super(...args);
-            _0x59cb41 = this;
+            wsInstance = this;
         }
     }
-    function _0x5c4c7d(packet) {
-        if (!_0x59cb41 || _0x59cb41.readyState !== WebSocket.OPEN) {
+    function sendPacket(packet) {
+        if (!wsInstance || wsInstance.readyState !== WebSocket.OPEN) {
             console.warn('WebSocket connection is not open!');
             return;
         }
         try {
             const array = new Uint8Array(packet);
-            _0x59cb41.send(array);
+            wsInstance.send(array);
         } catch (e) {
             console.error('Error sending packet:', e);
         }
     }
-    const _0x5845c3 = [23, 3, 3, 0, 38, 0, 0, 0];
-    const _0xautoLeavePacket = [255, 0, 0, 1];
-    document.addEventListener('keydown', (_0x15a410) => {
-        if (_0x15a410.key === 'F2' && autoLeaveEnabled) {
-            _0x583093 = !_0x583093;
-            if (_0x583093) {
-                _0x1ba49d = setInterval(() => {
-                    _0x414581('e');
-                    _0x5c4c7d(_0x5845c3);
+    const packetGH = [23, 3, 3, 0, 38, 0, 0, 0];
+    const autoLeavePacket = [255, 0, 0, 1];
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F2' && autoLeaveEnabled) {
+            autoLeaveActive = !autoLeaveActive;
+            if (autoLeaveActive) {
+                autoLeaveInterval = setInterval(() => {
+                    simulateKey('e');
+                    sendPacket(packetGH);
                 }, 50);
             } else {
-                clearInterval(_0x1ba49d);
-                _0x1ba49d = null;
+                clearInterval(autoLeaveInterval);
+                autoLeaveInterval = null;
             }
-        } else if (_0x15a410.key === 'F2' && autoLeaveEnabled) {
-            autoLeave();
         }
     });
-    function _0x414581(key) {
+    function simulateKey(key) {
         const eventOptions = {
             key,
             code: 'Key' + key.toUpperCase(),
@@ -264,41 +291,34 @@
         window.dispatchEvent(new KeyboardEvent("keyup", eventOptions));
     }
     function autoLeave() {
-        if (!_0x59cb41 || _0x59cb41.readyState !== WebSocket.OPEN) {
+        if (!wsInstance || wsInstance.readyState !== WebSocket.OPEN) {
             console.warn('WebSocket connection is not open!');
             return;
         }
         console.log('Авто лив активирован!');
-        _0x5c4c7д(_0xautoLeavePacket);
+        sendPacket(autoLeavePacket);
     }
 
-    // -------------------- AUTO E (MR.NEGOTIVX PROCESSOR) --------------------
-    // Устанавливаем период выполнения (если ранее не задан)
-    if (!window.ePerSecond) {
-        window.ePerSecond = 50;
-    } else {
-        window.ePerSecond = Math.max(window.ePerSecond / 2, 1);
-    }
+    // ==================== AUTO E (MR.NEGOTIVX PROCESSOR) ====================
     let isRunning = false;
     let intervalId;
-    const cache = new Map();
-
-    async function MrNegotivXProcessor() {
+    function MrNegotivXProcessor() {
         if (isRunning) return;
         isRunning = true;
+        const intervalDuration = autoESpeedEnabled ? FAST_INTERVAL : NORMAL_INTERVAL;
         intervalId = setInterval(() => {
             executeECommands();
             executeOtherCommands();
-        }, Math.max(window.ePerSecond, 1));
+        }, intervalDuration);
     }
     function executeECommands() {
-        hX3();
+        triggerE();
     }
-    function hX3() {
-        const eH9 = { key: 'e', code: 'KeyE', bubbles: true };
+    function triggerE() {
+        const eEvent = { key: 'e', code: 'KeyE', bubbles: true };
         for (let i = 0; i < 10; i++) {
-            window.dispatchEvent(new KeyboardEvent('keydown', eH9));
-            window.dispatchEvent(new KeyboardEvent('keyup', eH9));
+            window.dispatchEvent(new KeyboardEvent('keydown', eEvent));
+            window.dispatchEvent(new KeyboardEvent('keyup', eEvent));
         }
     }
     function executeOtherCommands() {
@@ -317,7 +337,6 @@
         clearInterval(intervalId);
     }
     // Запускаем авто E по выбранному триггеру:
-    // Если выбран пробел – слушаем keydown/keyup
     document.addEventListener('keydown', (e) => {
         if (window.autoEKey === " " && e.key === " " && !isRunning) {
             MrNegotivXProcessor();
@@ -328,7 +347,6 @@
             stopMrNegotivXProcessor();
         }
     });
-    // Если выбран правый клик – слушаем mousedown/mouseup
     document.addEventListener('mousedown', (e) => {
         if (window.autoEKey === "MouseRight" && e.button === 2 && !isRunning) {
             MrNegotivXProcessor();
@@ -339,31 +357,30 @@
             stopMrNegotivXProcessor();
         }
     });
-    // Отключаем контекстное меню, если выбран правый клик для авто E
     document.addEventListener('contextmenu', (e) => {
         if (window.autoEKey === "MouseRight") {
             e.preventDefault();
         }
     });
 
-    // -------------------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ DЛЯ AUTO E --------------------
-    function fJ0() { hX3(); }
-    function pD3() { hX3(); }
-    function wB2() { hX3(); }
-    function vO8() { let kM1 = Math.log(3); if (kM1 > 1) hX3(); }
-    function gH6() { hX3(); }
-    function jV4() { let yQ2 = 120; if (yQ2 % 2 === 0) hX3(); }
-    function xD0() { let dR1 = Math.log(2); let pQ0 = Math.exp(0); if ((dR1 + pQ0) % 2 === 0) hX3(); }
-    function bZ8() { let kS4 = 0.5; if (kS4 > 0.2) hX3(); }
-    function sY7() { let kF2 = 90; if (kF2 < 180) hX3(); }
-    function dP9() { hX3(); }
-    function uO2() { let xR6 = 0.6; if (xR6 > 0.5) hX3(); }
+    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ AUTO E
+    function fJ0() { triggerE(); }
+    function pD3() { triggerE(); }
+    function wB2() { triggerE(); }
+    function vO8() { let kM1 = Math.log(3); if (kM1 > 1) triggerE(); }
+    function gH6() { triggerE(); }
+    function jV4() { let yQ2 = 120; if (yQ2 % 2 === 0) triggerE(); }
+    function xD0() { let dR1 = Math.log(2); let pQ0 = Math.exp(0); if ((dR1 + pQ0) % 2 === 0) triggerE(); }
+    function bZ8() { let kS4 = 0.5; if (kS4 > 0.2) triggerE(); }
+    function sY7() { let kF2 = 90; if (kF2 < 180) triggerE(); }
+    function dP9() { triggerE(); }
+    function uO2() { let xR6 = 0.6; if (xR6 > 0.5) triggerE(); }
     function aJ4() {
         let sL0 = 0;
         for (let i = 0; i < 500; i++) {
             sL0 += Math.sin(i * Math.PI / 360) * Math.cos(i * Math.PI / 180);
         }
-        if (sL0 % 2 === 0) hX3();
+        if (sL0 % 2 === 0) triggerE();
     }
     function kV5() {
         let lR6 = [
@@ -375,7 +392,7 @@
         for (let i = 0; i < 25; i++) {
             zL1 = zL1 * Math.sin(i * Math.PI / 180);
         }
-        if (zL1 > 0.5) hX3();
+        if (zL1 > 0.5) triggerE();
     }
     function commandQueueProcessing() {
         const queue = Array(100).fill(1);
@@ -393,6 +410,7 @@
         }
         return result;
     }
+    const cache = new Map();
     function cacheProcessing(data) {
         if (cache.has(data)) {
             return cache.get(data);
@@ -405,7 +423,6 @@
         if (n === 0 || n === 1) return 1;
         return n * factorial(n - 1);
     }
-    // Заглушки для функций, детали реализации которых не указаны:
     function determinant(matrix) { return 0; }
     function quickSort(arr) { return arr.sort((a, b) => a - b); }
     function sieveOfEratosthenes(n) {
@@ -427,8 +444,65 @@
         }
         return true;
     }
-    // Запускаем авто E сразу по старой логике (если нужно, можно убрать вызов)
+
+    // Запускаем авто E сразу по старой логике (при необходимости можно убрать вызов)
     MrNegotivXProcessor();
 
-})();
+    // ==================== SPEED HACK (без вырезаний) ====================
+    // Исходный код speed hack с небольшим обёртыванием для возможности отключения через меню
+    let speedMultiplier = 100;
+    function setGameSpeed(multiplier) {
+        speedMultiplier = multiplier;
+    }
+    // Сохраняем оригиналы времени
+    const originalPerformanceNow = performance.now.bind(performance);
+    const originalDateNow = Date.now.bind(Date);
+    let lastTime = originalPerformanceNow();
+    performance.now = function() {
+        const currentTime = originalPerformanceNow();
+        const timeDiff = currentTime - lastTime;
+        lastTime = currentTime;
+        return currentTime + timeDiff * (speedMultiplier - 1);
+    };
+    Date.now = function() {
+        return Math.floor(performance.now() + originalDateNow() - originalPerformanceNow());
+    };
+    let ePressInterval;
+    function startAutoE_SpeedHack() {
+        if (!ePressInterval) {
+            ePressInterval = setInterval(() => {
+                const keydownEvent = new KeyboardEvent('keydown', { key: 'e', keyCode: 69, code: 'KeyE' });
+                const keyupEvent = new KeyboardEvent('keyup', { key: 'e', keyCode: 69, code: 'KeyE' });
+                window.dispatchEvent(keydownEvent);
+                window.dispatchEvent(keyupEvent);
+            }, 0);
+        }
+    }
+    function stopAutoE_SpeedHack() {
+        clearInterval(ePressInterval);
+        ePressInterval = null;
+    }
+    const speedHackMousedownListener = function(event) {
+        if (event.button === 2) {
+            setGameSpeed(99999999); // тута настрой — задаёт множитель скорости
+            startAutoE_SpeedHack();
+        }
+    };
+    const speedHackMouseupListener = function(event) {
+        if (event.button === 2) {
+            setGameSpeed(1);
+            stopAutoE_SpeedHack();
+        }
+    };
+    function enableSpeedHackListeners() {
+        document.addEventListener('mousedown', speedHackMousedownListener);
+        document.addEventListener('mouseup', speedHackMouseupListener);
+    }
+    function disableSpeedHackListeners() {
+        document.removeEventListener('mousedown', speedHackMousedownListener);
+        document.removeEventListener('mouseup', speedHackMouseupListener);
+    }
+    // По умолчанию скорость нормальная
+    setGameSpeed(1);
 
+})();
