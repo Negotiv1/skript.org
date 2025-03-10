@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name          By Mr.Negotiv|By Weest_bek
+// @name          By Weest_bek
 // @namespace    http://tampermonkey.net/
-// @version       By|Mr.Negotiv|By Weest_bek
+// @version       By Weest_bek
 // @description  не чего не трогать скрипт буду обновлять через сайт(телеграм https://t.me/nerest_skripts)/don’t touch anything, I’ll update the script via the website (telegram https://t.me/nerest_skripts)
 // @author        By|Mr.Negotiv|By Weest_bek
 // @match        *://dynast.io/*
